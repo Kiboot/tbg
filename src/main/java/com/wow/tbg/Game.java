@@ -104,13 +104,19 @@ public class Game {
         }
     }
 
-    private static void executeAttack(Character attacker, Character defender) {
-        int attackValue = attacker.getAttack();
-        int finalDamage = (int) (attackValue * (1 - (defender.getArmor() / (defender.getArmor() + 50.0))));
+private static void executeAttack(Character attacker, Character defender) {
+    int attackValue = attacker.getAttack(); 
+    int finalDamage = (int) (attackValue * (1 - (defender.getArmor() / (defender.getArmor() + 50.0))));
 
-        defender.takeDamage(finalDamage);
-        System.out.println(attacker.getName() + " attacks " + defender.getName() + " for " + attackValue + " damage (Final Damage: " + finalDamage + ")");
-    }
+    defender.takeDamage(finalDamage); 
+
+    System.out.println(attacker.getName() + " attacks " + defender.getName() + " for " + attackValue + " damage! (Final Damage: " + finalDamage + ")");
+
+    // **HP Updates Properly After Each Attack**
+    System.out.println("🔹 " + attacker.getName() + " HP: " + attacker.getHealth());
+    System.out.println("🔹 " + defender.getName() + " HP: " + defender.getHealth());
+}
+
 
     private static boolean endBattle(Hero hero, Monster monster) {
         if (hero.isDefeated()) {

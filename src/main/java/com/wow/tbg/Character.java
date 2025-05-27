@@ -19,9 +19,14 @@ public class Character {
         this.speed = speed;
     }
 
-    public void takeDamage(int incomingDamage) {
-        final int BASE_VALUE = 100; // Balance factor for armor scaling
-        int finalDamage = (int) (incomingDamage * (1 - (double) armor / (armor + BASE_VALUE)));
+    public void takeDamage(int damage) {
+        final int BASE_VALUE = 100;
+        int finalDamage = (int) (damage * (1 - (armor / (armor + BASE_VALUE))));
+
+        health -= finalDamage; // **HP properly updates in memory**
+        if (health < 0) health = 0; // Prevent negative HP
+
+        System.out.println(name + " takes " + finalDamage + " damage! Health left: " + health);
     }
 
     public boolean isDefeated() {

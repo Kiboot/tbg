@@ -104,15 +104,25 @@ public class Game {
         System.out.println("🔹 " + defender.getName() + " HP: " + defender.getHealth());
     }
 
-    private static boolean endBattle(Hero hero, Monster monster) {
-        if (hero.isDefeated()) {
-            System.out.println("💀 " + hero.getName() + " was defeated! Game Over.");
-            return false;
-        } else {
-            System.out.println("🏆 " + hero.getName() + " defeated " + monster.getName() + "!");
-            return true;
-        }
+    private static boolean endBattle(Hero hero, Monster monster, Dungeon dungeon) {
+    if (hero.isDefeated()) {
+        System.out.println("💀 " + hero.getName() + " was defeated!");
+        return false;
+    } else {
+        System.out.println("🏆 " + hero.getName() + " defeated " + monster.getName() + "!");
+
+        // Gold Drop Calculation (1/3 of dungeon entry fee ± random variation)
+        int baseGoldDrop = dungeon.getEntryFee() / 3;
+        int variance = (int) (Math.random() * 5 - 2); // ±2 gold randomness
+        int goldEarned = Math.max(1, baseGoldDrop + variance); // Ensure at least 1 gold
+
+        playerGold += goldEarned;
+        System.out.println("💰 You earned " + goldEarned + " gold!");
+
+        return true;
     }
+}
+
 
 public static void main(String[] args) {
     int playerGold = 200; // Start with 200 gold
@@ -126,7 +136,8 @@ public static void main(String[] args) {
                         new String[]{"Ancient Coin", "Cursed Amulet"}, 
                         5, 
                         0.4, 
-                        0.2);
+                        0.2
+                        , 0);
 
     Dungeon cave = new Dungeon("Cave",
                         new Monster[]{
@@ -135,31 +146,43 @@ public static void main(String[] args) {
                         new String[]{"Gold Nugget", "Rare Gem"}, 
                         6, 
                         0.5, 
-                        0.3);
+                        0.3
+                        , 50);
 
-    while (true) { // Loop to ensure player stays in town until they decide to exit
-        System.out.println("\n🌆 Welcome to town! What would you like to do?");
-        System.out.println("1. Enter Crypt (5 Levels)");
-        System.out.println("2. Enter Cave (6 Levels)");
-        System.out.println("3. View Gold (" + playerGold + " gold)");
-        System.out.println("X. Exit Program");
+   while (true) { // Town loop
+    System.out.println("\n🌆 Welcome to town! What would you like to do?");
+    System.out.println("1. Enter Crypt (5 Levels) - 💰 Cost: " + crypt.getEntryFee());
+    System.out.println("2. Enter Cave (6 Levels) - 💰 Cost: " + cave.getEntryFee());
+    System.out.println("3. View Gold (" + playerGold + " gold)");
+    System.out.println("X. Exit Program");
 
-        System.out.print("Choose an option: ");
-        String choice = scanner.nextLine().trim().toUpperCase();
+    System.out.print("Choose an option: ");
+    String choice = scanner.nextLine().trim().toUpperCase();
 
-        if (choice.equals("1")) {
+    if (choice.equals("1")) {
+        if (playerGold >= crypt.getEntryFee()) {
+            playerGold -= crypt.getEntryFee();
             startDungeon(hero, crypt);
-        } else if (choice.equals("2")) {
-            startDungeon(hero, cave);
-        } else if (choice.equals("3")) {
-            System.out.println("💰 You have " + playerGold + " gold.");
-        } else if (choice.equals("X")) {
-            System.out.println("👋 Thanks for playing! Exiting game...");
-            System.exit(0);
         } else {
-            System.out.println("⛔ Invalid choice! Try again.");
+            System.out.println("⛔ Not enough gold!");
         }
+    } else if (choice.equals("2")) {
+        if (playerGold >= cave.getEntryFee()) {
+            playerGold -= cave.getEntryFee();
+            startDungeon(hero, cave);
+        } else {
+            System.out.println("⛔ Not enough gold!");
+        }
+    } else if (choice.equals("3")) {
+        System.out.println("💰 You have " + playerGold + " gold.");
+    } else if (choice.equals("X")) {
+        System.out.println("👋 Thanks for playing! Exiting game...");
+        System.exit(0);
+    } else {
+        System.out.println("⛔ Invalid choice! Try again.");
     }
+}
+
 }
 public static Hero selectHero() {
     System.out.println("\n🦸 Choose your hero!");

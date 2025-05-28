@@ -1,38 +1,33 @@
 package com.wow.tbg;
-import java.util.Random;
-import java.util.Scanner;
 
 import java.util.Random;
 import java.util.Scanner;
 
-import java.util.Random;
 import java.util.Scanner;
+import java.util.Random;
 
 public class Game {
-    private static final double ENEMY_ENCOUNTER_CHANCE = 0.4;
-    private static final double LOOT_CHANCE = 0.2;
-    private static Random rand = new Random();
     private static Scanner scanner = new Scanner(System.in);
+    private static Random rand = new Random();
 
-    public static void startDungeon(Hero hero) {
-        System.out.println("🏰 You enter a dark dungeon...");
-        int dungeonLength = rand.nextInt(2) + 5; // Randomly 5 or 6 paces
+    public static void startDungeon(Hero hero, Dungeon dungeon) {
+        System.out.println("🏰 You enter the " + dungeon.getName() + " dungeon...");
 
-        for (int pace = 1; pace <= dungeonLength; pace++) {
-            System.out.println("\n🚶 Moving to pace " + pace + "/" + dungeonLength);
+        for (int level = 1; level <= dungeon.getLevels(); level++) {
+            System.out.println("\n🚶 Advancing to Level " + level);
 
             double eventRoll = rand.nextDouble();
 
-            if (eventRoll < ENEMY_ENCOUNTER_CHANCE) {
-                System.out.println("🔥 A monster appeared!");
-                Monster monster = new Monster("Goblin", 80, 10, 25, 5.2, 8.6);
+            // Monster spawn based on dungeon's rate
+            if (eventRoll < dungeon.getMonsterSpawnRate()) {
+                Monster monster = dungeon.getRandomMonster();
+                System.out.println("🔥 A " + monster.getName() + " appeared!");
+                if (!startBattle(hero, monster)) return;
+            }
 
-                if (!startBattle(hero, monster)) {
-                    return; // If hero dies, exit dungeon
-                }
-
-            } else if (eventRoll < ENEMY_ENCOUNTER_CHANCE + LOOT_CHANCE) {
-                System.out.println("💰 You found loot!");
+            // Loot spawn based on dungeon's rate
+            if (eventRoll < dungeon.getLootSpawnRate()) {
+                System.out.println("💰 You found " + dungeon.getRandomLoot() + "!");
             } else {
                 System.out.println("🔍 Nothing happens...");
             }
@@ -41,9 +36,8 @@ public class Game {
                 System.out.print("\nWhat do you want to do? (proceed, exit, inventory): ");
                 String choice = scanner.nextLine();
 
-                if (choice.equalsIgnoreCase("proceed")) {
-                    break;
-                } else if (choice.equalsIgnoreCase("exit")) {
+                if (choice.equalsIgnoreCase("proceed")) break;
+                else if (choice.equalsIgnoreCase("exit")) {
                     System.out.println("🚪 You exit the dungeon.");
                     return;
                 } else if (choice.equalsIgnoreCase("inventory")) {
@@ -54,7 +48,7 @@ public class Game {
             }
         }
 
-        System.out.println("\n🏆 You completed the dungeon!");
+        System.out.println("\n🏆 You completed the " + dungeon.getName() + "!");
     }
 
     public static boolean startBattle(Hero hero, Monster monster) {
@@ -81,22 +75,19 @@ public class Game {
 
     public static void playerTurn(Hero hero, Monster monster) {
         System.out.println("\n🎮 Your turn! Choose an action:");
-        System.out.println("1. Attack");
-        System.out.println("2. Defend");
-        System.out.println("3. Use Item");
+        System.out.println("Type: 'attack', 'defend', or 'item'");
 
-        int choice = scanner.nextInt();
-        scanner.nextLine(); 
+        String choice = scanner.nextLine();
 
-        switch (choice) {
-            case 1:
+        switch (choice.toLowerCase()) {
+            case "attack":
                 executeAttack(hero, monster);
                 break;
-            case 2:
+            case "defend":
                 System.out.println(hero.getName() + " braces for impact, reducing damage taken!");
-                //hero.reduceDamage(); 
+                hero.reduceDamage();
                 break;
-            case 3:
+            case "item":
                 System.out.println("🎒 Inventory feature coming soon!");
                 break;
             default:
@@ -104,19 +95,18 @@ public class Game {
         }
     }
 
-private static void executeAttack(Character attacker, Character defender) {
-    int attackValue = attacker.getAttack(); 
-    int finalDamage = (int) (attackValue * (1 - (defender.getArmor() / (defender.getArmor() + 50.0))));
+    private static void executeAttack(Character attacker, Character defender) {
+        int attackValue = attacker.getAttack(); 
+        int finalDamage = (int) (attackValue * (1 - (defender.getArmor() / (defender.getArmor() + 100))));
 
-    defender.takeDamage(finalDamage); 
+        defender.takeDamage(finalDamage); 
 
-    System.out.println(attacker.getName() + " attacks " + defender.getName() + " for " + attackValue + " damage! (Final Damage: " + finalDamage + ")");
+        System.out.println(attacker.getName() + " attacks " + defender.getName() + " for " + attackValue + " damage! (Final Damage: " + finalDamage + ")");
 
-    // **HP Updates Properly After Each Attack**
-    System.out.println("🔹 " + attacker.getName() + " HP: " + attacker.getHealth());
-    System.out.println("🔹 " + defender.getName() + " HP: " + defender.getHealth());
-}
-
+        // Display HP after each attack
+        System.out.println("🔹 " + attacker.getName() + " HP: " + attacker.getHealth());
+        System.out.println("🔹 " + defender.getName() + " HP: " + defender.getHealth());
+    }
 
     private static boolean endBattle(Hero hero, Monster monster) {
         if (hero.isDefeated()) {
@@ -128,19 +118,37 @@ private static void executeAttack(Character attacker, Character defender) {
         }
     }
 
-    public static void main(String[] args) {
-        Hero hero = new Hero("Arthur", 100, 15, 30, 10.5, 12.8);
+public static void main(String[] args) {
+    Hero hero = new Hero("Arthur", 100, 15, 30, 10.5, 12.8);
 
-        System.out.println("\n🌆 Welcome to town!");
-        System.out.print("🏰 Enter the dungeon? (yes/no): ");
-        String input = scanner.nextLine();
+    Dungeon crypt = new Dungeon("Crypt",
+        new Monster[]{new Monster("Skeleton", 60, 10, 20, 8.0, 5.5), new Monster("Zombie", 80, 12, 15, 6.0, 4.0)},
+        new String[]{"Ancient Coin", "Cursed Amulet"}, 5, 0.4, 0.2);
 
-        if (input.equalsIgnoreCase("yes")) {
-            startDungeon(hero);
+    Dungeon cave = new Dungeon("Cave",
+        new Monster[]{new Monster("Goblin", 70, 14, 18, 7.5, 6.5), new Monster("Troll", 120, 18, 25, 9.5, 3.5)},
+        new String[]{"Gold Nugget", "Rare Gem"}, 6, 0.5, 0.3);
+
+    while (true) { // Loop to ensure player stays in town until they decide to exit
+        System.out.println("\n🌆 Welcome to town! What would you like to do?");
+        System.out.println("1. Enter Crypt (5 Levels)");
+        System.out.println("2. Enter Cave (6 Levels)");
+        System.out.println("X. Exit Program");
+
+        System.out.print("Choose an option: ");
+        String choice = scanner.nextLine().trim().toUpperCase();
+
+        if (choice.equals("1")) {
+            startDungeon(hero, crypt);
+        } else if (choice.equals("2")) {
+            startDungeon(hero, cave);
+        } else if (choice.equals("X")) {
+            System.out.println("👋 Thanks for playing! Exiting game...");
+            System.exit(0); // Terminates program
         } else {
-            System.out.println("🛑 You stayed in town. Game Over!");
+            System.out.println("⛔ Invalid choice! Try again.");
         }
-
-        scanner.close();
     }
+}
+
 }

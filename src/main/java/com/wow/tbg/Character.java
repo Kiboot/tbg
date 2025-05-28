@@ -1,5 +1,5 @@
-
 package com.wow.tbg;
+
 import java.util.Random;
 
 public class Character {
@@ -22,16 +22,12 @@ public class Character {
     public void takeDamage(int damage) {
         final int BASE_VALUE = 100;
         int finalDamage = (int) (damage * (1 - (armor / (armor + BASE_VALUE))));
-
         health -= finalDamage; // **HP properly updates in memory**
-        if (health < 0) health = 0; // Prevent negative HP
-
+        if (health < 0){health = 0;}  // Prevent negative HP
         System.out.println(name + " takes " + finalDamage + " damage! Health left: " + health);
     }
 
-    public boolean isDefeated() {
-        return health <= 0;
-    }
+    public boolean isDefeated() {return health <= 0;}
     public int getAttack() {
         Random rand = new Random();
         return rand.nextInt((maxATK - minATK) + 1) + minATK;
@@ -43,7 +39,4 @@ public class Character {
     public int getMaxATK() { return maxATK; }
     public double getArmor() { return armor; }
     public double getSpeed() { return speed;}
-
-    
-
 }

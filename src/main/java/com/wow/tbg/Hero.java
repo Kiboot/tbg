@@ -1,7 +1,4 @@
-
 package com.wow.tbg;
-
-
 
 public class Hero extends Character {
 
@@ -15,5 +12,7 @@ public class Hero extends Character {
     }
     public void stun(){
     }
+
+    public void reduceDamage(){}
 }
 

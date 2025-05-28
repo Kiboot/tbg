@@ -1,18 +1,16 @@
 package com.wow.tbg;
-
 import java.util.Random;
 import java.util.Scanner;
-
-import java.util.Scanner;
-import java.util.Random;
 
 public class Game {
     private static Scanner scanner = new Scanner(System.in);
     private static Random rand = new Random();
 
     public static void startDungeon(Hero hero, Dungeon dungeon) {
+        //entering the dungeon
         System.out.println("🏰 You enter the " + dungeon.getName() + " dungeon...");
 
+        // each level of dungeon is run on a for loop
         for (int level = 1; level <= dungeon.getLevels(); level++) {
             System.out.println("\n🚶 Advancing to Level " + level);
 
@@ -32,7 +30,7 @@ public class Game {
                 System.out.println("🔍 Nothing happens...");
             }
 
-            while (true) {
+            while (true) { // decision Loop inside the dungeon
                 System.out.print("\nWhat do you want to do? (proceed, exit, inventory): ");
                 String choice = scanner.nextLine();
 
@@ -47,7 +45,6 @@ public class Game {
                 }
             }
         }
-
         System.out.println("\n🏆 You completed the " + dungeon.getName() + "!");
     }
 
@@ -69,7 +66,6 @@ public class Game {
                 if (monster.isDefeated()) break;
             }
         }
-
         return endBattle(hero, monster);
     }
 
@@ -119,20 +115,33 @@ public class Game {
     }
 
 public static void main(String[] args) {
-    Hero hero = new Hero("Arthur", 100, 15, 30, 10.5, 12.8);
+    int playerGold = 200; // Start with 200 gold
+    Hero hero = selectHero(); // Let players choose their hero
+    //Hero hero = new Hero("Arthur", 100, 15, 30, 10.5, 12.8); old template character
 
     Dungeon crypt = new Dungeon("Crypt",
-        new Monster[]{new Monster("Skeleton", 60, 10, 20, 8.0, 5.5), new Monster("Zombie", 80, 12, 15, 6.0, 4.0)},
-        new String[]{"Ancient Coin", "Cursed Amulet"}, 5, 0.4, 0.2);
+                        new Monster[]{
+                            new Monster("Skeleton", 60, 10, 20, 8.0, 5.5),
+                            new Monster("Zombie", 80, 12, 15, 6.0, 4.0)},
+                        new String[]{"Ancient Coin", "Cursed Amulet"}, 
+                        5, 
+                        0.4, 
+                        0.2);
 
     Dungeon cave = new Dungeon("Cave",
-        new Monster[]{new Monster("Goblin", 70, 14, 18, 7.5, 6.5), new Monster("Troll", 120, 18, 25, 9.5, 3.5)},
-        new String[]{"Gold Nugget", "Rare Gem"}, 6, 0.5, 0.3);
+                        new Monster[]{
+                            new Monster("Goblin", 70, 14, 18, 7.5, 6.5), 
+                            new Monster("Troll", 120, 18, 25, 9.5, 3.5)},
+                        new String[]{"Gold Nugget", "Rare Gem"}, 
+                        6, 
+                        0.5, 
+                        0.3);
 
     while (true) { // Loop to ensure player stays in town until they decide to exit
         System.out.println("\n🌆 Welcome to town! What would you like to do?");
         System.out.println("1. Enter Crypt (5 Levels)");
         System.out.println("2. Enter Cave (6 Levels)");
+        System.out.println("3. View Gold (" + playerGold + " gold)");
         System.out.println("X. Exit Program");
 
         System.out.print("Choose an option: ");
@@ -142,13 +151,37 @@ public static void main(String[] args) {
             startDungeon(hero, crypt);
         } else if (choice.equals("2")) {
             startDungeon(hero, cave);
+        } else if (choice.equals("3")) {
+            System.out.println("💰 You have " + playerGold + " gold.");
         } else if (choice.equals("X")) {
             System.out.println("👋 Thanks for playing! Exiting game...");
-            System.exit(0); // Terminates program
+            System.exit(0);
         } else {
             System.out.println("⛔ Invalid choice! Try again.");
         }
     }
 }
+public static Hero selectHero() {
+    System.out.println("\n🦸 Choose your hero!");
+    System.out.println("1. Warrior (High HP, Strong Attack)");
+    System.out.println("2. Rogue (Fast, High Critical Damage)");
+    System.out.println("3. Mage (Powerful Magic, Low Armor)");
+
+    while (true) {
+        System.out.print("Enter your choice: ");
+        String choice = scanner.nextLine().trim();
+
+        if (choice.equals("1")) {
+            return new Hero("Warrior", 150, 20, 35, 12.0, 10.0);
+        } else if (choice.equals("2")) {
+            return new Hero("Rogue", 100, 15, 40, 8.0, 20.0);
+        } else if (choice.equals("3")) {
+            return new Hero("Mage", 80, 25, 50, 5.0, 12.0);
+        } else {
+            System.out.println("⛔ Invalid choice! Try again.");
+        }
+    }
+}
+
 
 }

@@ -17,28 +17,11 @@ public class Dungeon {
         this.lootSpawnRate = lootRate;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Monster getRandomMonster() {
-        return monsterPool[(int) (Math.random() * monsterPool.length)];
-    }
-
-    public String getRandomLoot() {
-        return lootPool[(int) (Math.random() * lootPool.length)];
-    }
-
-    public int getLevels() {
-        return levels;
-    }
-
-    public double getMonsterSpawnRate() {
-        return monsterSpawnRate;
-    }
-
-    public double getLootSpawnRate() {
-        return lootSpawnRate;
-    }
+    public String getName() {return name;}
+    public Monster getRandomMonster() {return monsterPool[(int) (Math.random() * monsterPool.length)];}
+    public String getRandomLoot() {return lootPool[(int) (Math.random() * lootPool.length)];}
+    public int getLevels() {return levels;}
+    public double getMonsterSpawnRate() {return monsterSpawnRate;}
+    public double getLootSpawnRate() {return lootSpawnRate;}
 }
 

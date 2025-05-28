@@ -4,40 +4,32 @@ import java.util.Scanner;
 
 public class Game {
     private static Scanner scanner = new Scanner(System.in);
-    private static Random rand = new Random();
 
-    public static void startDungeon(Hero hero, Dungeon dungeon) {
-        //entering the dungeon
+    public static int startDungeon(Hero hero, Dungeon dungeon, int playerGold) {
         System.out.println("🏰 You enter the " + dungeon.getName() + " dungeon...");
 
-        // each level of dungeon is run on a for loop
         for (int level = 1; level <= dungeon.getLevels(); level++) {
             System.out.println("\n🚶 Advancing to Level " + level);
 
-            double eventRoll = rand.nextDouble();
-
-            // Monster spawn based on dungeon's rate
-            if (eventRoll < dungeon.getMonsterSpawnRate()) {
-                Monster monster = dungeon.getRandomMonster();
+            if (Math.random() < dungeon.getMonsterSpawnRate()) { // Roll if monster is spawned
+                Monster monster = dungeon.getRandomMonster(); //spawn a monster
                 System.out.println("🔥 A " + monster.getName() + " appeared!");
-                if (!startBattle(hero, monster)) return;
+                playerGold = startBattle(hero, monster, dungeon, playerGold); // Updated gold after battle
+                if (hero.isDefeated()) return playerGold; // Return current gold since hero died
             }
 
-            // Loot spawn based on dungeon's rate
-            if (eventRoll < dungeon.getLootSpawnRate()) {
+            if (Math.random() < dungeon.getLootSpawnRate()) { // NON FUNCTIONAL YET
                 System.out.println("💰 You found " + dungeon.getRandomLoot() + "!");
-            } else {
-                System.out.println("🔍 Nothing happens...");
             }
 
-            while (true) { // decision Loop inside the dungeon
+            while (true) {
                 System.out.print("\nWhat do you want to do? (proceed, exit, inventory): ");
                 String choice = scanner.nextLine();
 
                 if (choice.equalsIgnoreCase("proceed")) break;
                 else if (choice.equalsIgnoreCase("exit")) {
                     System.out.println("🚪 You exit the dungeon.");
-                    return;
+                    return playerGold; // Return updated player gold to main method
                 } else if (choice.equalsIgnoreCase("inventory")) {
                     System.out.println("🎒 Managing inventory... (Feature coming soon!)");
                 } else {
@@ -45,10 +37,14 @@ public class Game {
                 }
             }
         }
+
         System.out.println("\n🏆 You completed the " + dungeon.getName() + "!");
+        return playerGold; // Return updated gold after dungeon completion
     }
 
-    public static boolean startBattle(Hero hero, Monster monster) {
+
+
+    public static int startBattle(Hero hero, Monster monster, Dungeon dungeon, int playerGold) {
         System.out.println("\n⚔️ Battle starts between " + hero.getName() + " and " + monster.getName());
 
         while (!hero.isDefeated() && !monster.isDefeated()) {
@@ -66,8 +62,10 @@ public class Game {
                 if (monster.isDefeated()) break;
             }
         }
-        return endBattle(hero, monster);
+
+        return endBattle(hero, monster, dungeon, playerGold); // Updated gold after battle
     }
+
 
     public static void playerTurn(Hero hero, Monster monster) {
         System.out.println("\n🎮 Your turn! Choose an action:");
@@ -104,10 +102,10 @@ public class Game {
         System.out.println("🔹 " + defender.getName() + " HP: " + defender.getHealth());
     }
 
-    private static boolean endBattle(Hero hero, Monster monster, Dungeon dungeon) {
+    private static int endBattle(Hero hero, Monster monster, Dungeon dungeon, int playerGold) {
     if (hero.isDefeated()) {
         System.out.println("💀 " + hero.getName() + " was defeated!");
-        return false;
+        return playerGold; // No change in gold
     } else {
         System.out.println("🏆 " + hero.getName() + " defeated " + monster.getName() + "!");
 
@@ -119,9 +117,12 @@ public class Game {
         playerGold += goldEarned;
         System.out.println("💰 You earned " + goldEarned + " gold!");
 
-        return true;
+        return playerGold; // Return updated gold amount
     }
 }
+
+
+
 
 
 public static void main(String[] args) {
@@ -149,41 +150,73 @@ public static void main(String[] args) {
                         0.3
                         , 50);
 
-   while (true) { // Town loop
-    System.out.println("\n🌆 Welcome to town! What would you like to do?");
-    System.out.println("1. Enter Crypt (5 Levels) - 💰 Cost: " + crypt.getEntryFee());
-    System.out.println("2. Enter Cave (6 Levels) - 💰 Cost: " + cave.getEntryFee());
-    System.out.println("3. View Gold (" + playerGold + " gold)");
-    System.out.println("X. Exit Program");
+   while (true) {
+        System.out.println("\n🌆 Welcome to town! What would you like to do?");
+        System.out.println("1. Enter Crypt (5 Levels) - 💰 Cost: " + crypt.getEntryFee());
+        System.out.println("2. Enter Cave (6 Levels) - 💰 Cost: " + cave.getEntryFee());
+        System.out.println("3. View Gold (" + playerGold + " gold)");
+        System.out.println("X. Exit Program");
 
-    System.out.print("Choose an option: ");
-    String choice = scanner.nextLine().trim().toUpperCase();
+        System.out.print("Choose an option: ");
+        String choice = scanner.nextLine().trim().toUpperCase();
 
-    if (choice.equals("1")) {
-        if (playerGold >= crypt.getEntryFee()) {
-            playerGold -= crypt.getEntryFee();
-            startDungeon(hero, crypt);
+        if (choice.equals("1")) {
+            if (playerGold >= crypt.getEntryFee()) {
+                playerGold -= crypt.getEntryFee(); // Deduct entry fee
+                playerGold = startDungeon(hero, crypt, playerGold); // Update gold after dungeon run
+                if (hero.isDefeated()) hero = buyNewHero(playerGold); // Offer hero purchase if defeated
+            } else {
+                System.out.println("⛔ Not enough gold!");
+            }
+        } else if (choice.equals("2")) {
+            if (playerGold >= cave.getEntryFee()) {
+                playerGold -= cave.getEntryFee();
+                playerGold = startDungeon(hero, cave, playerGold); // Update gold after dungeon run
+                if (hero.isDefeated()) hero = buyNewHero(playerGold);
+            } else {
+                System.out.println("⛔ Not enough gold!");
+            }
+        } else if (choice.equals("3")) {
+            System.out.println("💰 You have " + playerGold + " gold.");
+        } else if (choice.equals("X")) {
+            System.out.println("👋 Thanks for playing! Exiting game...");
+            System.exit(0);
         } else {
-            System.out.println("⛔ Not enough gold!");
+            System.out.println("⛔ Invalid choice! Try again.");
         }
-    } else if (choice.equals("2")) {
-        if (playerGold >= cave.getEntryFee()) {
-            playerGold -= cave.getEntryFee();
-            startDungeon(hero, cave);
-        } else {
-            System.out.println("⛔ Not enough gold!");
-        }
-    } else if (choice.equals("3")) {
-        System.out.println("💰 You have " + playerGold + " gold.");
-    } else if (choice.equals("X")) {
-        System.out.println("👋 Thanks for playing! Exiting game...");
-        System.exit(0);
-    } else {
-        System.out.println("⛔ Invalid choice! Try again.");
     }
 }
 
+
+public static Hero buyNewHero(int playerGold) {
+    int heroCost = 100; // Fixed price for new hero
+
+    System.out.println("\n💰 Your hero has fallen! You can buy a new hero for " + heroCost + " gold.");
+    System.out.println("Do you want to recruit a new hero? (yes/no)");
+
+    while (true) {
+        System.out.print("> ");
+        String choice = scanner.nextLine().trim().toLowerCase();
+
+        if (choice.equals("yes")) {
+            if (playerGold >= heroCost) {
+                playerGold -= heroCost; // Deduct gold
+                System.out.println("🏆 You recruited a new hero!");
+                return selectHero(); // Reuse hero selection method instead of rewriting logic
+            } else {
+                System.out.println("⛔ Not enough gold! Game Over.");
+                System.exit(0);
+            }
+        } else if (choice.equals("no")) {
+            System.out.println("💀 You chose not to recruit a new hero. Game Over.");
+            System.exit(0);
+        } else {
+            System.out.println("⛔ Invalid choice! Try again.");
+        }
+    }
 }
+
+
 public static Hero selectHero() {
     System.out.println("\n🦸 Choose your hero!");
     System.out.println("1. Warrior (High HP, Strong Attack)");

@@ -1,4 +1,4 @@
-package com.wow.tbg;
+
 
 public class Dungeon {
     private String name;
@@ -9,7 +9,7 @@ public class Dungeon {
     private double lootSpawnRate;
     private int entryFee; // 💰 New field for entry cost
 
-    public Dungeon(String name, Monster[] monsters, String[] loot, int levels, double monsterRate, double lootRate, int fee) {
+    public Dungeon(String name, int levels, double monsterRate, double lootRate, int fee, Monster[] monsters, String[] loot) {
         this.name = name;
         this.monsterPool = monsters;
         this.lootPool = loot;

@@ -1,4 +1,3 @@
-package com.wow.tbg;
 
 import java.util.Random;
 public class Character {

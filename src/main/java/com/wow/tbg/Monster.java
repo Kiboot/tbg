@@ -1,4 +1,4 @@
-package com.wow.tbg;
+
 
 public class Monster extends Character {
     

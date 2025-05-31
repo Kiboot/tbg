@@ -1,5 +1,4 @@
 
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -191,37 +190,41 @@ public class Game {
         for (int level = 1; level <= dungeon.getLevels(); level++) {
             System.out.println("\n🚶 Advancing to Level " + level);
 
-            if (Math.random() < dungeon.getMonsterSpawnRate()) {
-                Monster monster = dungeon.getRandomMonster();
-                System.out.println("🔥 A " + monster.getName() + " appeared!");
-                playerGold = startBattle(hero, monster, dungeon, playerGold); // Update gold after battle
-                if (hero.isDefeated()) return playerGold; // Return current gold if hero dies
-            }
+            boolean battleComplete = false;
 
-            if (Math.random() < dungeon.getLootSpawnRate()) {
-                System.out.println("💰 You found " + dungeon.getRandomLoot() + "!");
-            }
+            while (!battleComplete) {
+                System.out.println("\n🔹 Current HP = " + hero.getHealth() + " | Gold = " + playerGold);
+                System.out.print("What do you want to do? (proceed, exit, inventory): ");
+                String choice = scanner.nextLine().trim().toLowerCase();
 
-            while (true) {
-                // Display current HP and Gold before making a decision
-                System.out.println("\n🔹 Current Status: HP = " + hero.getHealth() + " | Gold = " + playerGold);
-                System.out.print("\nWhat do you want to do? (proceed, exit, inventory): ");
-                String choice = scanner.nextLine();
-
-                if (choice.equalsIgnoreCase("proceed")) break;
-                else if (choice.equalsIgnoreCase("exit")) {
+                if (choice.equals("exit")) {
                     System.out.println("🚪 You exit the dungeon.");
-                    return playerGold; // Return updated player gold to main method
-                } else if (choice.equalsIgnoreCase("inventory")) {
+                    return playerGold;
+                } else if (choice.equals("inventory")) {
                     System.out.println("🎒 Managing inventory... (Feature coming soon!)");
+                } else if (choice.equals("proceed")) {
+                    battleComplete = false; // Reset before each new encounter
+
+                    if (Math.random() < dungeon.getMonsterSpawnRate()) {
+                        Monster monster = dungeon.getRandomMonster();
+                        System.out.println("🔥 A " + monster.getName() + " appeared!");
+                        playerGold = startBattle(hero, monster, dungeon, playerGold);
+                        if (hero.isDefeated()) return playerGold;
+                    }
+
+                    if (Math.random() < dungeon.getLootSpawnRate()) {
+                        System.out.println("💰 You found " + dungeon.getRandomLoot() + "!");
+                    }
+                    battleComplete = true;
                 } else {
                     System.out.println("⛔ Invalid choice! Try again.");
                 }
             }
         }
         System.out.println("\n🏆 You completed the " + dungeon.getName() + "!");
-        return playerGold; // Return updated gold after dungeon completion
+        return playerGold;
     }
+
 
     public static int startBattle(Hero hero, Monster monster, Dungeon dungeon, int playerGold) {
         System.out.println("\n⚔️ Battle starts between " + hero.getName() + " and " + monster.getName());
@@ -273,15 +276,20 @@ public class Game {
 
         System.out.println(attacker.getName() + " attacks " + defender.getName() + " for " + attackValue + " damage! (Final Damage: " + finalDamage + ")");
         // Display HP after each attack
+        System.out.println("----------------------------------------------");
         System.out.println("🔹 " + attacker.getName() + " HP: " + attacker.getHealth());
         System.out.println("🔹 " + defender.getName() + " HP: " + defender.getHealth());
+        System.out.println("----------------------------------------------");
     }
+    
 
     private static int endBattle(Hero hero, Monster monster, Dungeon dungeon, int playerGold) {
     if (hero.isDefeated()) {
-        System.out.println("💀 " + hero.getName() + " was defeated!");
-        return playerGold; // No change in gold
-    } else {
+        System.out.println("💀 " + hero.getName() + " has fallen! You must recruit a new hero.");
+        hero = selectHero(playerGold, true); // Buy a new hero
+        return playerGold;
+    }
+    else {
         System.out.println("🏆 " + hero.getName() + " defeated " + monster.getName() + "!");
 
         // Gold Drop Calculation (1/3 of dungeon entry fee ± random variation)

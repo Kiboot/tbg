@@ -20,7 +20,13 @@ public class Dungeon {
     }
 
     public String getName() {return name;}
-    public Monster getRandomMonster() {return monsterPool[(int) (Math.random() * monsterPool.length)];}
+
+    public Monster getRandomMonster() {
+    Monster original = monsterPool[(int) (Math.random() * monsterPool.length)];
+    return new Monster(original.getName(), original.getHealth(), original.getMinATK(),
+        original.getMaxATK(), original.getArmor(), original.getSpeed());
+}
+
     public String getRandomLoot() {return lootPool[(int) (Math.random() * lootPool.length)];}
     public int getLevels() {return levels;}
     public double getMonsterSpawnRate() {return monsterSpawnRate;}

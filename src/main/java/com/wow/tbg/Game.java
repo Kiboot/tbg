@@ -44,10 +44,11 @@ public class Game {
                     35, 
                     12.0, 
                     10.0,
+                    20,
                     new Spell[]{
-                        new Spell("Fireball", 10, 50, "Fire", "Single"),
-                        new Spell("Lightning Strike", 15, 40, "Electricity", "Single"),
-                        new Spell("Heal", 5, 30, "Healing", "Single")});
+                        new Spell("Fireball", 10, 5),
+                        new Spell("Lightning Strike", 15, 6),
+                        new Spell("Heal", 15, 6)});
             } else if (choice.equals("2")) {
                 return new Hero(
                     "Rogue", 
@@ -56,10 +57,11 @@ public class Game {
                     40, 
                     8.0, 
                     20.0,
+                    50,
                     new Spell[]{
-                        new Spell("Poison Dart", 5, 20, "Poison", "Single"),
-                        new Spell("Critical Strike", 10, 50, "Physical", "Single"),
-                        new Spell("Stealth", 0, 0, "None", "None")
+                        new Spell("Poison Dart", 5, 20),
+                        new Spell("Critical Strike", 10, 50),
+                        new Spell("Stealth", 0, 0)
                     });
             } else if (choice.equals("3")) {
                 return new Hero(
@@ -69,18 +71,17 @@ public class Game {
                     50, 
                     5.0, 
                     12.0,
+                    100,
                     new Spell[]{
-                        new Spell("Fireball", 10, 50, "Fire", "Single"),
-                        new Spell("Lightning Strike", 15, 40, "Electricity", "Single"),
-                        new Spell("Heal", 5, 30, "Healing", "Single")
+                        new Spell("Fireball", 10, 5),
+                        new Spell("Lightning Strike", 15, 4),
+                        new Spell("Heal", 5, 3)
                     });
             } else {
                 System.out.println("⛔ Invalid choice! Try again.");
             }
         }
     }
-
-
 
     public static Map<String, Dungeon> initializeDungeons() {
         Map<String, Dungeon> dungeons = new HashMap<>();
@@ -229,21 +230,36 @@ public class Game {
     public static int startBattle(Hero hero, Monster monster, Dungeon dungeon, int playerGold) {
         System.out.println("\n⚔️ Battle starts between " + hero.getName() + " and " + monster.getName());
 
-        while (!hero.isDefeated() && !monster.isDefeated()) {
-            if (hero.getSpeed() >= monster.getSpeed()) {
-                playerTurn(hero, monster);
-                if (monster.isDefeated()) break;
+            while (!hero.isDefeated() && !monster.isDefeated()) {
+                System.out.println("\n🔹 " + hero.getName() + " HP: " + hero.getHealth() + " | MP: " + hero.getMana());
+                System.out.println("🆚 " + monster.getName() + " HP: " + monster.getHealth());
 
-                executeAttack(monster, hero);
-                if (hero.isDefeated()) break;
-            } else {
-                executeAttack(monster, hero);
-                if (hero.isDefeated()) break;
+                showCombatOptions(hero); // Displays available actions dynamically
 
-                playerTurn(hero, monster);
-                if (monster.isDefeated()) break;
+                System.out.print("> ");
+                String choice = scanner.nextLine().trim();
+
+                if (choice.equals("1")) {
+                    executeAttack(hero,monster);
+                } else {
+                    try {
+                        int spellChoice = Integer.parseInt(choice) - 2; // Adjust index to match spell selection
+                        Spell[] spells = hero.getSpells();
+
+                        if (spellChoice >= 0 && spellChoice < spells.length) {
+                            hero.castSpell(spells[spellChoice], monster);
+                        } else {
+                            System.out.println("⛔ Invalid choice! Try again.");
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("⛔ Invalid input! Try again.");
+                    }
+                }
+
+                if (!monster.isDefeated()) {
+                    executeAttack(monster,hero);
+                }
             }
-        }
         return endBattle(hero, monster, dungeon, playerGold); // Ensure playerGold is updated
     }
     public static void playerTurn(Hero hero, Monster monster) {
@@ -258,7 +274,7 @@ public class Game {
                 break;
             case "defend":
                 System.out.println(hero.getName() + " braces for impact, reducing damage taken!");
-                hero.reduceDamage();
+                // hero.reduceDamage();
                 break;
             case "item":
                 System.out.println("🎒 Inventory feature coming soon!");
@@ -284,24 +300,65 @@ public class Game {
     
 
     private static int endBattle(Hero hero, Monster monster, Dungeon dungeon, int playerGold) {
-    if (hero.isDefeated()) {
-        System.out.println("💀 " + hero.getName() + " has fallen! You must recruit a new hero.");
-        hero = selectHero(playerGold, true); // Buy a new hero
-        return playerGold;
-    }
-    else {
-        System.out.println("🏆 " + hero.getName() + " defeated " + monster.getName() + "!");
+        if (hero.isDefeated()) {
+            System.out.println("💀 " + hero.getName() + " has fallen! You must recruit a new hero.");
+            hero = selectHero(playerGold, true); // Buy a new hero
+            return playerGold;
+        }
+        else {
+            System.out.println("🏆 " + hero.getName() + " defeated " + monster.getName() + "!");
 
-        // Gold Drop Calculation (1/3 of dungeon entry fee ± random variation)
-        int baseGoldDrop = dungeon.getEntryFee() / 3;
-        int variance = (int) (Math.random() * 5 - 2); // ±2 gold randomness
-        int goldEarned = Math.max(1, baseGoldDrop + variance); // Ensure at least 1 gold
+            // Gold Drop Calculation (1/3 of dungeon entry fee ± random variation)
+            int baseGoldDrop = dungeon.getEntryFee() / 3;
+            int variance = (int) (Math.random() * 5 - 2); // ±2 gold randomness
+            int goldEarned = Math.max(1, baseGoldDrop + variance); // Ensure at least 1 gold
 
-        playerGold += goldEarned;
-        System.out.println("💰 You earned " + goldEarned + " gold!");
-        return playerGold; // Return updated gold amount
+            playerGold += goldEarned;
+            System.out.println("💰 You earned " + goldEarned + " gold!");
+            return playerGold; // Return updated gold amount
+        }
     }
-}
+
+    // Handles casting a spell, ensuring cooldown and mana costs are checked
+    public static void castSpell(Hero hero, Monster monster, Spell spell) {
+        if (!spell.isAvailable()) {
+            System.out.println("⛔ " + spell.getName() + " is on cooldown! (" + spell.getCurrentCooldown() + " turns left)");
+            return;
+        }
+
+        if (hero.getMana() >= spell.getManaCost()) {
+            hero.setMana(hero.getMana() - spell.getManaCost()); // Deduct MP
+            spell.resetCooldown(); // Starts cooldown
+
+            System.out.println("🔥 " + hero.getName() + " casts " + spell.getName() + "!");
+
+            // Effects are applied dynamically based on spell context
+        } else {
+            System.out.println("⛔ Not enough MP to cast " + spell.getName() + "!");
+        }
+    }
+
+// Called at the end of each turn to reduce spell cooldowns
+    public static void reduceSpellCooldowns(Hero hero) {
+        for (Spell spell : hero.getSpells()) {
+            spell.reduceCooldown();
+        }
+    }
+
+    public static void showCombatOptions(Hero hero) {
+        System.out.println("\n🔹 Choose your action:");
+        System.out.println("1. Attack");
+
+        // Dynamically list hero's spells
+        Spell[] spells = hero.getSpells();
+        for (int i = 0; i < spells.length; i++) {
+            System.out.println((i + 2) + ". " + spells[i]); // Spells start at index 2
+        }
+
+        // Placeholder for future item functionality
+        System.out.println((spells.length + 2) + ". Items (Coming Soon)");
+    }
+
 
 
 }

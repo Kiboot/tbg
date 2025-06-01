@@ -1,18 +1,14 @@
-
-
 public class Spell {
     private String name;
     private int manaCost;
-    private int effectValue; // Damage OR healing amount
-    private String effectType; // "Burn", "Freeze", "Heal", etc.
-    private String targetType; // "Self" or "Enemy"
+    private int cooldown;  // Number of turns before reuse
+    private int currentCooldown; // Tracks how many turns remain before reuse
 
-    public Spell(String name, int manaCost, int effectValue, String effectType, String targetType) {
+    public Spell(String name, int manaCost, int cooldown) {
         this.name = name;
         this.manaCost = manaCost;
-        this.effectValue = effectValue;
-        this.effectType = effectType;
-        this.targetType = targetType;
+        this.cooldown = cooldown;
+        this.currentCooldown = 0; // Starts available
     }
 
     public String getName() {
@@ -23,21 +19,28 @@ public class Spell {
         return manaCost;
     }
 
-    public int getEffectValue() {
-        return effectValue;
+    public int getCooldown() {
+        return cooldown;
     }
 
-    public String getEffectType() {
-        return effectType;
+    public int getCurrentCooldown() {
+        return currentCooldown;
     }
 
-    public String getTargetType() {
-        return targetType;
+    public void resetCooldown() {
+        currentCooldown = cooldown; // Resets cooldown to max
+    }
+
+    public void reduceCooldown() {
+        if (currentCooldown > 0) currentCooldown--; // Decrease cooldown each turn
+    }
+
+    public boolean isAvailable() {
+        return currentCooldown == 0; // Spell is usable if cooldown is 0
     }
 
     @Override
     public String toString() {
-        return name + " (" + effectType + ", Cost: " + manaCost + " MP, Target: " + targetType + ")";
+        return name + " (Cost: " + manaCost + " MP, Cooldown: " + cooldown + " turns)";
     }
 }
-
